@@ -54,7 +54,7 @@ st.markdown('<div class="title">💼 Salary Prediction App</div>', unsafe_allow_
 # Subtitle
 st.markdown(
     '<div class="subtitle">Predict salary based on years of experience</div>',
-    unsafe_allow_html=True
+     unsafe_allow_html=True
 )
 
 # Input section
@@ -68,4 +68,4 @@ experience = st.slider(
 
 # Predict button
 if st.button("Predict Salary"):
-st.caption("Built using Machine Learning and Streamlit")
+    st.caption("Built using Machine Learning and Streamlit")
