@@ -1,71 +1,120 @@
-import streamlit as st
-import joblib
+﻿import streamlit as st
+import pandas as pd
 import numpy as np
+import joblib
 
-# Page configuration
+# =========================================================
+# PAGE SETTINGS
+# =========================================================
+
 st.set_page_config(
-    page_title="Salary Prediction App",
+    page_title="Salary Prediction",
     page_icon="💼",
     layout="centered"
 )
 
-# Custom CSS
-st.markdown(
-    """
-    <style>
-    .main {
-        background-color: #f5f7fa;
-    }
+# =========================================================
+# LOAD MODEL
+# =========================================================
 
-    .title {
-        text-align: center;
-        font-size: 40px;
-        font-weight: bold;
-        color: #1f2937;
-        margin-bottom: 10px;
-    }
+@st.cache_resource
+def load_model():
+    return joblib.load("model.pkl")
 
-    .subtitle {
-        text-align: center;
-        font-size: 18px;
-        color: #4b5563;
-        margin-bottom: 30px;
-    }
+model = load_model()
 
-    .prediction-box {
-        background-color: #ffffff;
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0px 4px 15px rgba(0,0,0,0.1);
-        text-align: center;
-        margin-top: 20px;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
+# =========================================================
+# PREDICTION FUNCTION
+# =========================================================
+
+def predict_salary(experience):
+
+    exp = np.array([[experience]])
+
+    salary = model.predict(exp)[0]
+
+    # Safety Limits
+    salary = max(salary, 30000)
+    salary = min(salary, 5000000)
+
+    return salary
+
+# =========================================================
+# TITLE
+# =========================================================
+
+st.title("💼 Salary Prediction System")
+
+st.write(
+    "Enter your years of experience to predict your salary using Machine Learning."
 )
 
-# Load model
-model = joblib.load('model.pkl')
+st.divider()
 
-# Title
-st.markdown('<div class="title">💼 Salary Prediction App</div>', unsafe_allow_html=True)
+# =========================================================
+# USER INPUT
+# =========================================================
 
-# Subtitle
-st.markdown(
-    '<div class="subtitle">Predict salary based on years of experience</div>',
-     unsafe_allow_html=True
-)
-
-# Input section
 experience = st.slider(
     "Years of Experience",
     min_value=0.0,
-    max_value=20.0,
-    value=1.0,
+    max_value=25.0,
+    value=2.0,
     step=0.5
 )
 
-# Predict button
-if st.button("Predict Salary"):
-    st.caption("Built using Machine Learning and Streamlit")
+# =========================================================
+# PREDICTION
+# =========================================================
+
+# Predicted annual salary
+annual_salary = predict_salary(experience)
+
+# Monthly salary
+monthly_salary = annual_salary / 12
+
+# =========================================================
+# OUTPUT
+# =========================================================
+
+st.subheader("Predicted Salary")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.success(f"Annual Salary\n\n₹ {annual_salary:,.0f}")
+
+with col2:
+    st.info(f"Monthly Salary\n\n₹ {monthly_salary:,.0f}")
+
+# =========================================================
+# GRAPH
+# =========================================================
+
+st.divider()
+
+st.subheader("Salary Growth Graph")
+
+x = np.linspace(0, 25, 100)
+
+y = [predict_salary(i) for i in x]
+
+chart_data = pd.DataFrame({
+    "Experience": x,
+    "Annual Salary": y
+})
+
+st.line_chart(
+    chart_data,
+    x="Experience",
+    y="Annual Salary",
+    use_container_width=True
+)
+
+# =========================================================
+# FOOTER
+# =========================================================
+
+st.divider()
+
+st.caption("Polynomial Regression Model | Streamlit Project")
